@@ -1,1 +1,1 @@
-flask, os, sqlite3, json, threading
+Flask==3.0.3
