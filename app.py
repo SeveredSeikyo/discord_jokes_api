@@ -185,4 +185,4 @@ if __name__ == '__main__':
     # Initialize the database (create table if it doesn't exist, but don't populate)
     initialize_database()
     # Run the Flask application in debug mode.
-    app.run(debug=True)
+    app.run()
