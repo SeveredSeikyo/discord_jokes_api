@@ -3,21 +3,31 @@ import pandas as pd
 
 # Establish connection
 con = sqlite3.connect("./jokes.db")
-cursor = con.cursor() # It's good practice to use a cursor for executing commands
+cursor = con.cursor()
 
+# ✅ Create table if not exists
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS jokes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        joke TEXT NOT NULL UNIQUE
+    );
+''')
+print("Checked/Created table: jokes")
+
+# Read cleaned jokes from CSV
 fetched_jokes = pd.read_csv("./cleaned_jokes.csv")
 
-# Extract 'joke' columns as pandas Series
+# Extract 'joke' column (assumes column is named '0' if no headers)
 fetched_jokes_arr = fetched_jokes['0']
 
-# Define the insert statement with IGNORE
-# This will skip any joke that already exists due to the UNIQUE constraint
-insert_stmt = 'INSERT OR IGNORE INTO uncleaned_jokes(joke) VALUES (?)'
+# Insert statement with IGNORE to skip duplicates
+insert_stmt = 'INSERT OR IGNORE INTO jokes(joke) VALUES (?)'
 
-# Insert Fetched jokes
+# Insert fetched jokes
 print("\nInserting Fetched Jokes...")
 fetched_inserted_count = 0
 fetched_skipped_count = 0
+
 for j in range(len(fetched_jokes_arr)):
     joke_text = fetched_jokes_arr[j]
     try:
@@ -31,14 +41,15 @@ for j in range(len(fetched_jokes_arr)):
 
 print(f"Finished inserting Fetched Jokes. Inserted: {fetched_inserted_count}, Skipped (duplicates): {fetched_skipped_count}")
 
-# Don't forget to commit your changes!
+# Commit changes
 con.commit()
 print("\nAll insertions attempted and changes committed to the database.")
 
-# Optional: Get final count of unique jokes
-cursor.execute("SELECT COUNT(*) FROM uncleaned_jokes;")
+# Final count of unique jokes
+cursor.execute("SELECT COUNT(*) FROM jokes;")
 total_unique_jokes = cursor.fetchone()[0]
 print(f"Total unique jokes in database: {total_unique_jokes}")
 
+# Close connection
 con.close()
 print("Database connection closed successfully!")
